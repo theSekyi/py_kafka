@@ -3,11 +3,16 @@ from bs4 import BeautifulSoup
 from time import sleep
 from kafka import KafkaProducer
 
+headers = {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36',
+        'Pragma': 'no-cache'
+    }
+
 def fetch_raw(recipe_url):
     html = None
     print(f'Processing..{recipe_url}')
     try:
-        r = requests.get(recipe_url)
+        r = requests.get(recipe_url,headers=headers)
         if r.status_code == 200:
             html = r.text
     except Exception as ex:
@@ -23,14 +28,13 @@ def get_recipes():
     print('Accessing list')
 
     try:
-        r = requests.get(url)
+        r = requests.get(url,headers=headers)
         if r.status_code == 200:
             html = r.text
             soup = BeautifulSoup(html, 'lxml')
-            links = soup.select('.fixed-recipe-card__h3 a')
+            links = soup.find_all("a", class_="carouselNav__link recipeCarousel__link")
             idx = 0
             for link in links:
-
                 sleep(2)
                 recipe = fetch_raw(link['href'])
                 recipies.append(recipe)
@@ -65,3 +69,15 @@ def connect_kafka_producer():
         print(str(ex))
     finally:
         return _producer
+
+
+if __name__ == '__main__':
+
+    
+    all_recipes = get_recipes()
+    if len(all_recipes) > 0:
+        kafka_producer = connect_kafka_producer()
+        for recipe in all_recipes:
+            publish_message(kafka_producer, 'raw_recipes', 'raw', recipe.strip())
+        if kafka_producer is not None:
+            kafka_producer.close()
