@@ -57,13 +57,13 @@ def parse(markup):
             ingredients = [span.text.strip() for span in all_ingredients]
 
         if description_section:
-            description = description_section[0].text.strip().replace('"', '')
+            description = description_section.strip()
 
         if submitter_section:
-            submit_by = submitter_section[0].text.strip()
+            submit_by = submitter_section.strip()
 
         if title_section:
-            title = title_section[0].text
+            title = title_section.strip()
 
         rec = {'title': title, 'submitter': submit_by, 'description': description, 'calories': calories,
                'ingredients': ingredients}
