@@ -88,3 +88,9 @@ if __name__ == '__main__':
         parsed_records.append(result)
     consumer.close()
     sleep(5)
+
+    if len(parsed_records) > 0:
+        print('Publishing records..')
+        producer = connect_kafka_producer()
+        for rec in parsed_records:
+            publish_message(producer, parsed_topic_name, 'parsed', rec)
