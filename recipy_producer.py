@@ -32,14 +32,14 @@ def get_recipes():
         if r.status_code == 200:
             html = r.text
             soup = BeautifulSoup(html, 'lxml')
-            links = soup.find_all("a", class_="carouselNav__link recipeCarousel__link")
+            links = soup.find_all("a", class_="card__titleLink manual-link-behavior elementFont__titleLink margin-8-bottom")
             idx = 0
             for link in links:
                 sleep(2)
                 recipe = fetch_raw(link['href'])
                 recipies.append(recipe)
                 idx += 1
-                if idx > 2:
+                if idx > 5:
                     break
     except Exception as ex:
         print('Exception in get_recipes')

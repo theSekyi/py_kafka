@@ -1,4 +1,3 @@
-
 import json
 from time import sleep
 
@@ -40,24 +39,22 @@ def parse(markup):
 
         soup = BeautifulSoup(markup, 'lxml')
         # title
-        title_section = soup.select('.recipe-summary__h1')
+        title_section = soup.find("div", class_="headline-wrapper").h1.text
         # submitter
-        submitter_section = soup.select('.submitter__name')
+        submitter_section = soup.find("div", class_="byline__blocks").span.a.text
         # description
-        description_section = soup.select('.submitter__description')
+        description_section = soup.find("div", class_="elementFont__dek--within").p.text.strip()
         # ingredients
-        ingredients_section = soup.select('.recipe-ingred_txt')
+        all_ingredients = soup.find("ul", class_="ingredients-section").select('li label span span')
 
         # calories
-        calories_section = soup.select('.calorie-count')
-        if calories_section:
-            calories = calories_section[0].text.replace('cals', '').strip()
+        calories_section = soup.find("div", class_="recipeNutritionSectionBlock").find("div",class_="section-body").text.strip()
 
-        if ingredients_section:
-            for ingredient in ingredients_section:
-                ingredient_text = ingredient.text.strip()
-                if 'Add all ingredients to list' not in ingredient_text and ingredient_text != '':
-                    ingredients.append({'step': ingredient.text.strip()})
+        if calories_section:
+            calories = calories_section.split(';')[0].split(' ')[0]
+
+        if all_ingredients:
+            ingredients = [span.text.strip() for span in all_ingredients]
 
         if description_section:
             description = description_section[0].text.strip().replace('"', '')
@@ -88,7 +85,6 @@ if __name__ == '__main__':
     for msg in consumer:
         html = msg.value
         result = parse(html)
-        print(result)
         parsed_records.append(result)
     consumer.close()
     sleep(5)
